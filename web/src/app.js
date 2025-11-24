@@ -20,14 +20,13 @@ const runOptimize = document.getElementById('runOptimize');
 const suggestionsEl = document.getElementById('suggestions');
 const applyBest = document.getElementById('applyBest');
 
-
 // Utility: get and set library
 function getLibrary(){
   try{ return JSON.parse(localStorage.getItem('promptLibrary')||'[]') }catch(e){return[]}
 }
 function setLibrary(arr){ localStorage.setItem('promptLibrary', JSON.stringify(arr)) }
 
-// Chat rendering (no AI backend; echo bot for demonstration)
+// Chat rendering
 function appendMessage(text, who='bot'){
   const msg = document.createElement('div');
   msg.className = 'msg ' + (who==='user' ? 'user':'bot');
@@ -36,7 +35,7 @@ function appendMessage(text, who='bot'){
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-promptForm.addEventListener('submit', e =>{
+promptForm.addEventListener('submit', async e =>{
   e.preventDefault();
   const prompt = promptInput.value.trim();
   if(!prompt) return;
@@ -45,10 +44,25 @@ promptForm.addEventListener('submit', e =>{
   // Save to prompt history (a separate key) for quick recall
   savePromptHistory(prompt);
 
-  // For demo, echo as bot after slight delay
-  setTimeout(()=>{
-    appendMessage('Bot (demo): received your prompt — try the Prompt Optimizer to improve it.');
-  }, 500);
+  // Call backend /api/chat which proxies to OpenAI
+  try{
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({error:'unknown'}));
+      appendMessage(`Bot: (error) ${err.error||res.statusText}`, 'bot');
+    } else {
+      const data = await res.json();
+      const text = data?.text || '[no response]';
+      appendMessage(text, 'bot');
+    }
+  }catch(err){
+    console.error('Chat API error', err);
+    appendMessage('Bot: (error contacting API)', 'bot');
+  }
 
   promptInput.value = '';
 });
@@ -158,16 +172,30 @@ runOptimize.addEventListener('click', ()=>{
     const el = document.createElement('div'); el.className='suggestion';
     const h = document.createElement('strong'); h.textContent = s.title; const pre = document.createElement('pre'); pre.textContent = s.text;
     const useBtn = document.createElement('button'); useBtn.textContent='Use'; useBtn.className='primary'; useBtn.style.marginTop='8px';
-    useBtn.addEventListener('click', ()=>{ optimizerInput.value = s.text; alert('Applied suggestion to optimizer input'); });
+
+    // Apply suggestion to the main chat input (promptInput) and also to optimizerInput,
+    // then close the optimizer modal for convenience.
+    useBtn.addEventListener('click', ()=>{
+      promptInput.value = s.text;
+      optimizerInput.value = s.text;
+      optimizerModal.classList.add('hidden');
+      alert('Applied suggestion to chat input');
+    });
+
     el.appendChild(h); el.appendChild(pre); el.appendChild(useBtn);
     suggestionsEl.appendChild(el);
   })
 });
 
 applyBest.addEventListener('click', ()=>{
-  // Take first suggestion if present
-  const first = suggestionsEl.querySelector('.suggestion pre');
-  if(first){ promptInput.value = first.textContent; optimizerModal.classList.add('hidden'); }
+  // copy the first suggestion into the main chat input (promptInput) as well as optimizerInput
+  const firstPre = suggestionsEl.querySelector('.suggestion pre');
+  if(firstPre){
+    const txt = firstPre.textContent;
+    promptInput.value = txt;
+    optimizerInput.value = txt;
+    optimizerModal.classList.add('hidden');
+  }
   else alert('Run optimize first to generate suggestions');
 });
 
