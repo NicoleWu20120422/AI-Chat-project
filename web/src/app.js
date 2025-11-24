@@ -20,6 +20,7 @@ const runOptimize = document.getElementById('runOptimize');
 const suggestionsEl = document.getElementById('suggestions');
 const applyBest = document.getElementById('applyBest');
 
+
 // Utility: get and set library
 function getLibrary(){
   try{ return JSON.parse(localStorage.getItem('promptLibrary')||'[]') }catch(e){return[]}
