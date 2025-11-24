@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Chat - Prompt Library & Optimizer</title>
+  <link rel="stylesheet" href="../src/styles.css" />
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand">AI Chat</div>
+    <nav class="tools">
+      <button id="openLibraryBtn" class="tool">Prompt Library</button>
+      <button id="openOptimizerBtn" class="tool">Prompt Optimizer</button>
+    </nav>
+  </header>
+
+  <main class="app">
+    <section id="chat" class="chat"></section>
+
+    <form id="promptForm" class="prompt-form">
+      <textarea id="promptInput" placeholder="Type your prompt here..." rows="3"></textarea>
+      <div class="actions">
+        <button type="submit" class="send">Send</button>
+        <button type="button" id="savePromptBtn" class="secondary">Save to Library</button>
+        <button type="button" id="clearChatBtn" class="secondary">Clear</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Prompt Library Modal -->
+  <div id="libraryModal" class="modal hidden">
+    <div class="modal-content">
+      <header>
+        <h3>Prompt Library</h3>
+        <button class="close" data-close="libraryModal">×</button>
+      </header>
+      <section id="libraryList" class="library-list"></section>
+      <footer>
+        <button id="exportLibrary" class="secondary">Export</button>
+        <button id="importLibrary" class="secondary">Import</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Optimizer Modal -->
+  <div id="optimizerModal" class="modal hidden">
+    <div class="modal-content">
+      <header>
+        <h3>Prompt Optimizer</h3>
+        <button class="close" data-close="optimizerModal">×</button>
+      </header>
+      <section class="optimizer">
+        <label for="optimizerInput">Prompt to optimize</label>
+        <textarea id="optimizerInput" rows="4"></textarea>
+        <div class="opt-actions">
+          <button id="runOptimize" class="primary">Optimize</button>
+          <button id="applyBest" class="secondary">Apply Best to Input</button>
+        </div>
+        <div id="suggestions" class="suggestions"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../src/app.js"></script>
+</body>
+</html>
